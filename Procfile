@@ -1,1 +1,1 @@
-web: gunicorn streamyapi.wsgi --log-file -
+web: gunicorn --pythonpath streamyapi streamyapi.wsgi --log-file -
