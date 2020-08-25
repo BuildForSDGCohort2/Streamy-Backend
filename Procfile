@@ -1,0 +1,1 @@
+web: gunicorn streamyapi.wsgi --log-file -
