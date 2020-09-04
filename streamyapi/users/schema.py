@@ -35,6 +35,7 @@ class Register(graphene.Mutation):
         username = graphene.String(required=True)
         email = graphene.String(required=True)
         password = graphene.String(required=True)
+        password2 = graphene.String(required=True)
 
     def mutate(self, info, **kwargs):
         first_name = kwargs.get("first_name")
@@ -42,11 +43,17 @@ class Register(graphene.Mutation):
         username = kwargs.get("username")
         email = kwargs.get("email")
         password = kwargs.get("password")
+        password2 = kwargs.get("password2")
 
         user = get_user_model()(
             first_name=first_name, last_name=last_name, username=username, email=email
         )
+
+        if password != password2:
+            raise GraphQLError("Password mismatch! Please chek again")
+
         user.set_password(password)
+        user.set_password(password2)
         user.save()
 
         return Register(user=user)
