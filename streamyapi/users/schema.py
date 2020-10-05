@@ -50,7 +50,10 @@ class Register(graphene.Mutation):
         password2 = kwargs.get("password2")
 
         user = UserModel(
-            first_name=first_name, last_name=last_name, username=username, email=email
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
         )
 
         if UserModel.objects.filter(email=email).exists():
@@ -73,13 +76,18 @@ class UpdateAccount(graphene.Mutation):
     user = graphene.Field(UserType)
 
     class Arguments:
+        user_id = graphene.Int()
         first_name = graphene.String()
         last_name = graphene.String()
+        is_superuser = graphene.Boolean()
 
-    def mutate(self, info, first_name, last_name):
+    def mutate(self, info, user_id, first_name, last_name, is_superuser):
         user = info.context.user
 
-        if user.is_anonymous:
+        if user.is_superuser:
+            user = UserModel.objects.get(id=user_id)
+
+        if user.is_anonymous or user.is_superuser == False:
             raise GraphQLError("Please login to update account!")
 
         if first_name != "":
@@ -87,6 +95,8 @@ class UpdateAccount(graphene.Mutation):
 
         if last_name != "":
             user.last_name = last_name
+
+        user.is_superuser = is_superuser
 
         user.save()
 
@@ -121,7 +131,7 @@ class PasswordChange(graphene.Mutation):
     def mutate(self, info, old_password, new_password, cfrm_password):
         user = info.context.user
 
-        if user.is_anonymous:
+        if user.is_anonymous or user.is_superuser == False:
             raise GraphQLError("You must be logged in to change your password")
         else:
             if not user.check_password(old_password):
