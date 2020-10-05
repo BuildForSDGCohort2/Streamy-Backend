@@ -157,7 +157,7 @@ class UpdateLike(graphene.Mutation):
         if not movie:
             raise GraphQLError("Cannot find movie with the given movie id")
 
-        like = Like.objects.filter(user=user, movie=movie)
+        like = Like.objects.get(user=user, movie=movie)
         like.delete()
 
         return UpdateLike(user=user, movie=movie)
