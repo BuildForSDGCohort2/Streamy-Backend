@@ -23,7 +23,7 @@ class Query(graphene.ObjectType):
 
     def resolve_movies(self, info, search=None):
         if search:
-            filter = Q(title__icontains=search) | Q(description__icontains=search)
+            filter = Q(title__icontains=search)
 
             return Movie.objects.filter(filter)
         return Movie.objects.all()
