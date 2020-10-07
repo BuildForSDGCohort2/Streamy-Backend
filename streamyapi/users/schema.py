@@ -76,27 +76,26 @@ class UpdateAccount(graphene.Mutation):
     user = graphene.Field(UserType)
 
     class Arguments:
-        user_id = graphene.Int()
+        # user_id = graphene.Int()
         first_name = graphene.String()
         last_name = graphene.String()
+        email = graphene.String()
         is_superuser = graphene.Boolean()
 
-    def mutate(self, info, user_id, first_name, last_name, is_superuser):
+    def mutate(self, info, **kwargs):
         user = info.context.user
 
         if user.is_superuser:
-            user = UserModel.objects.get(id=user_id)
+            user = UserModel.objects.get(id=user.id)
 
-        if user.is_anonymous or user.is_superuser == False:
+        if user.is_anonymous and user.is_superuser == False:
             raise GraphQLError("Please login to update account!")
 
-        if first_name != "":
-            user.first_name = first_name
-
-        if last_name != "":
-            user.last_name = last_name
-
-        user.is_superuser = is_superuser
+        
+        user.first_name = kwargs.get("first_name") or user.first_name
+        user.last_name = kwargs.get("last_name") or user.last_name
+        user.email = kwargs.get("email") or user.email
+        user.is_superuser = kwargs.get("is_superuser") or user.is_superuser
 
         user.save()
 

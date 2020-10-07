@@ -1,6 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
+from django.db.models import Q
 
 from .models import Movie, Like
 from users.schema import UserType
@@ -17,10 +18,14 @@ class LikeType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    movies = graphene.List(MovieType)
+    movies = graphene.List(MovieType, search=graphene.String())
     likes = graphene.List(LikeType)
 
-    def resolve_movies(self, info):
+    def resolve_movies(self, info, search=None):
+        if search:
+            filter = Q(title__icontains=search) | Q(description__icontains=search)
+
+            return Movie.objects.filter(filter)
         return Movie.objects.all()
 
     def resolve_likes(self, info):
