@@ -103,8 +103,8 @@ class UpdateAccount(graphene.Mutation):
 
 
 class DeleteAccount(graphene.Mutation):
-    user = graphene.Field(UserType)
-
+    password = graphene.String()
+    
     class Arguments:
         password = graphene.String(required=True)
 
@@ -116,7 +116,7 @@ class DeleteAccount(graphene.Mutation):
 
         user.delete()
 
-        return DeleteAccount(user=user)
+        return DeleteAccount(password=password)
 
 
 class PasswordChange(graphene.Mutation):
@@ -130,7 +130,7 @@ class PasswordChange(graphene.Mutation):
     def mutate(self, info, old_password, new_password, cfrm_password):
         user = info.context.user
 
-        if user.is_anonymous or user.is_superuser == False:
+        if user.is_anonymous and user.is_superuser == False:
             raise GraphQLError("You must be logged in to change your password")
         else:
             if not user.check_password(old_password):
