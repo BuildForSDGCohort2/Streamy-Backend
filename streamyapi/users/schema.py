@@ -50,7 +50,10 @@ class Register(graphene.Mutation):
         password2 = kwargs.get("password2")
 
         user = UserModel(
-            first_name=first_name, last_name=last_name, username=username, email=email
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
         )
 
         if UserModel.objects.filter(email=email).exists():
@@ -73,20 +76,26 @@ class UpdateAccount(graphene.Mutation):
     user = graphene.Field(UserType)
 
     class Arguments:
+        # user_id = graphene.Int()
         first_name = graphene.String()
         last_name = graphene.String()
+        email = graphene.String()
+        is_superuser = graphene.Boolean()
 
-    def mutate(self, info, first_name, last_name):
+    def mutate(self, info, **kwargs):
         user = info.context.user
 
-        if user.is_anonymous:
+        if user.is_superuser:
+            user = UserModel.objects.get(id=user.id)
+
+        if user.is_anonymous and user.is_superuser == False:
             raise GraphQLError("Please login to update account!")
 
-        if first_name != "":
-            user.first_name = first_name
-
-        if last_name != "":
-            user.last_name = last_name
+        
+        user.first_name = kwargs.get("first_name") or user.first_name
+        user.last_name = kwargs.get("last_name") or user.last_name
+        user.email = kwargs.get("email") or user.email
+        user.is_superuser = kwargs.get("is_superuser") or user.is_superuser
 
         user.save()
 
@@ -94,8 +103,8 @@ class UpdateAccount(graphene.Mutation):
 
 
 class DeleteAccount(graphene.Mutation):
-    user = graphene.Field(UserType)
-
+    password = graphene.String()
+    
     class Arguments:
         password = graphene.String(required=True)
 
@@ -107,7 +116,7 @@ class DeleteAccount(graphene.Mutation):
 
         user.delete()
 
-        return DeleteAccount(user=user)
+        return DeleteAccount(password=password)
 
 
 class PasswordChange(graphene.Mutation):
@@ -121,7 +130,7 @@ class PasswordChange(graphene.Mutation):
     def mutate(self, info, old_password, new_password, cfrm_password):
         user = info.context.user
 
-        if user.is_anonymous:
+        if user.is_anonymous and user.is_superuser == False:
             raise GraphQLError("You must be logged in to change your password")
         else:
             if not user.check_password(old_password):
