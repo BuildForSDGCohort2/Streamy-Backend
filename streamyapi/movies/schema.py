@@ -1,3 +1,5 @@
+"""Schema to define movie operations."""
+
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
@@ -26,7 +28,7 @@ class LikeType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    """A class to query all movies and movie likes
+    """A class to query all movies and movie likes.
 
     ...
 
@@ -37,13 +39,14 @@ class Query(graphene.ObjectType):
 
     resolve_likes(info):
         Gets infomation about the likes on a movie
+
     """
 
     movies = graphene.List(MovieType, search=graphene.String())
     likes = graphene.List(LikeType)
 
     def resolve_movies(self, info, search=None):
-        """Gets all movies or all searched movies
+        """Get all movies or all searched movies.
 
         Parameters
         ----------
@@ -61,8 +64,8 @@ class Query(graphene.ObjectType):
         -------
         movies: list
             A list of all movies or all searched movies
-        """
 
+        """
         if search:
             filter_by = Q(title__icontains=search)
 
@@ -70,7 +73,7 @@ class Query(graphene.ObjectType):
         return Movie.objects.all()
 
     def resolve_likes(self, info):
-        """Gets all likes
+        """Get all likes.
 
         Parameters
         ----------
@@ -86,24 +89,25 @@ class Query(graphene.ObjectType):
         -------
         likes: list
             A list of all movie likes
-        """
 
+        """
         return Like.objects.all()
 
 
 class CreateMovie(graphene.Mutation):
-    """A class to register a new movie
+    """A class to register a new movie.
 
     Methods
     -------
     mutate(info, **kwargs):
         creates a new movie
+
     """
 
     movie = graphene.Field(MovieType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
@@ -130,6 +134,7 @@ class CreateMovie(graphene.Mutation):
 
         genre: list(str)
             A movie genre
+
         """
 
         title = graphene.String(required=True)
@@ -142,7 +147,7 @@ class CreateMovie(graphene.Mutation):
         genre = graphene.List(graphene.String, required=True)
 
     def mutate(self, info, **kwargs):
-        """Creates a new movie
+        """Create a new movie.
 
         Parameters
         ----------
@@ -166,8 +171,8 @@ class CreateMovie(graphene.Mutation):
         GraphQLError:
             If user is not logged in
             If user is not a super user
-        """
 
+        """
         user = info.context.user
 
         if user.is_anonymous:
@@ -194,7 +199,7 @@ class CreateMovie(graphene.Mutation):
 
 
 class UpdateMovie(graphene.Mutation):
-    """A class to update movie information
+    """A class to update movie information.
 
     ...
 
@@ -202,12 +207,13 @@ class UpdateMovie(graphene.Mutation):
     -------
     mutate(info, **kwargs):
         updates a specified movie information
+
     """
 
     movie = graphene.Field(MovieType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
@@ -237,6 +243,7 @@ class UpdateMovie(graphene.Mutation):
 
         genre: list(str) (optional)
             A movie genre
+
         """
 
         movie_id = graphene.Int(required=True)
@@ -250,7 +257,7 @@ class UpdateMovie(graphene.Mutation):
         genre = graphene.List(graphene.String)
 
     def mutate(self, info, **kwargs):
-        """Updates infomation about a movie
+        """Update infomation about a movie.
 
         Parameters
         ----------
@@ -273,8 +280,8 @@ class UpdateMovie(graphene.Mutation):
         ------
         GraphQLError:
             If the current user didn't create the movie
-        """
 
+        """
         user = info.context.user
         movie = Movie.objects.get(id=kwargs.get("movie_id"))
 
@@ -296,7 +303,7 @@ class UpdateMovie(graphene.Mutation):
 
 
 class DeleteMovie(graphene.Mutation):
-    """A class to delete a movie
+    """A class to delete a movie.
 
     ...
 
@@ -304,23 +311,25 @@ class DeleteMovie(graphene.Mutation):
     -------
     mutate(info, movie_id):
         deletes a movie
+
     """
 
     movie_id = graphene.Int()
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
         movie_id: int
             The ID of the movie to update
+
         """
 
         movie_id = graphene.Int(required=True)
 
     def mutate(self, info, movie_id):
-        """Deletes a movie
+        """Delete a movie.
 
         Parameters
         ----------
@@ -343,8 +352,8 @@ class DeleteMovie(graphene.Mutation):
         ------
         GraphQLError:
             If the current user didn't create the movie
-        """
 
+        """
         user = info.context.user
         movie = Movie.objects.get(id=movie_id)
 
@@ -357,7 +366,7 @@ class DeleteMovie(graphene.Mutation):
 
 
 class CreateLike(graphene.Mutation):
-    """A class to like a movie
+    """A class to like a movie.
 
     ...
 
@@ -365,24 +374,26 @@ class CreateLike(graphene.Mutation):
     -------
     mutate(info, movie_id):
         like a movie
+
     """
 
     user = graphene.Field(UserType)
     movie = graphene.Field(MovieType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
         movie_id: int
             The ID of the movie to like
+
         """
 
         movie_id = graphene.Int(required=True)
 
     def mutate(self, info, movie_id):
-        """Likes a specified movie
+        """Likes a specified movie.
 
         Parameters
         ----------
@@ -409,8 +420,8 @@ class CreateLike(graphene.Mutation):
         GraphQLError:
             If the user is not logged in
             If the movie ID does not exist
-        """
 
+        """
         user = info.context.user
         if user.is_anonymous:
             raise GraphQLError("You must be logged in to like movies")
@@ -425,7 +436,7 @@ class CreateLike(graphene.Mutation):
 
 
 class UpdateLike(graphene.Mutation):
-    """A class to dislike a movie
+    """A class to dislike a movie.
 
     ...
 
@@ -433,24 +444,26 @@ class UpdateLike(graphene.Mutation):
     -------
     mutate(info, movie_id):
         updates a movie like
+
     """
 
     user = graphene.Field(UserType)
     movie = graphene.Field(MovieType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
         movie_id: int
             The ID of the movie to dislike
+
         """
 
         movie_id = graphene.Int(required=True)
 
     def mutate(self, info, movie_id):
-        """Update Likes on a specified movie
+        """Update Likes on a specified movie.
 
         Parameters
         ----------
@@ -477,8 +490,8 @@ class UpdateLike(graphene.Mutation):
         GraphQLError:
             If the user is not logged in
             If the movie ID does not exist
-        """
 
+        """
         user = info.context.user
 
         if user.is_anonymous:

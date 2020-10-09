@@ -1,3 +1,5 @@
+"""Schema to define user operations."""
+
 import graphene
 from graphene_django import DjangoObjectType
 from django.contrib.auth import get_user_model
@@ -19,7 +21,7 @@ class UserType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    """A class to query every user and a current user
+    """A class to query every user and a current user.
 
     ...
 
@@ -30,13 +32,14 @@ class Query(graphene.ObjectType):
 
     resolve_me(info):
         Gets infomation about the current user
+
     """
 
     users = graphene.List(UserType)
     me = graphene.Field(UserType)
 
     def resolve_users(self, info):
-        """Gets all registered users
+        """Get all registered users.
 
         Parameters
         ----------
@@ -51,12 +54,12 @@ class Query(graphene.ObjectType):
         -------
         users: list
             A list of all users information
-        """
 
+        """
         return UserModel.objects.all()
 
     def resolve_me(self, info):
-        """Gets infomation about the current user
+        """Get infomation about the current user.
 
         Parameters
         ----------
@@ -76,8 +79,8 @@ class Query(graphene.ObjectType):
         ------
         GraphQLError:
             If a user is not logged in
-        """
 
+        """
         user = info.context.user
 
         if user.is_anonymous:
@@ -87,18 +90,19 @@ class Query(graphene.ObjectType):
 
 
 class Register(graphene.Mutation):
-    """A class to create a new user
+    """A class to create a new user.
 
     Methods
     -------
     mutate(info, **kwargs):
         creates a new registered users
+
     """
 
     user = graphene.Field(UserType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
@@ -119,6 +123,7 @@ class Register(graphene.Mutation):
 
         password2: str
             A password confirmation
+
         """
 
         first_name = graphene.String(required=True)
@@ -129,7 +134,7 @@ class Register(graphene.Mutation):
         password2 = graphene.String(required=True)
 
     def mutate(self, info, **kwargs):
-        """Creates a new user
+        """Create a new user.
 
         Parameters
         ----------
@@ -154,8 +159,8 @@ class Register(graphene.Mutation):
             If email already exists
             If username already exists
             If there is a password mismatch
-        """
 
+        """
         first_name = kwargs.get("first_name")
         last_name = kwargs.get("last_name")
         username = kwargs.get("username")
@@ -187,7 +192,7 @@ class Register(graphene.Mutation):
 
 
 class UpdateAccount(graphene.Mutation):
-    """A class to update a user information
+    """A class to update a user information.
 
     ...
 
@@ -195,12 +200,13 @@ class UpdateAccount(graphene.Mutation):
     -------
     mutate(info, **kwargs):
         updates a registered users
+
     """
 
     user = graphene.Field(UserType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
@@ -215,6 +221,7 @@ class UpdateAccount(graphene.Mutation):
 
         is_superuser: bool (optional)
             The new user type
+
         """
 
         # user_id = graphene.Int()
@@ -224,7 +231,7 @@ class UpdateAccount(graphene.Mutation):
         is_superuser = graphene.Boolean()
 
     def mutate(self, info, **kwargs):
-        """Updates infomation about the current user
+        """Update infomation about the current user.
 
         Parameters
         ----------
@@ -247,8 +254,8 @@ class UpdateAccount(graphene.Mutation):
         ------
         GraphQLError:
             If user is not logged in and not a super user
-        """
 
+        """
         user = info.context.user
 
         if user.is_superuser:
@@ -268,7 +275,7 @@ class UpdateAccount(graphene.Mutation):
 
 
 class DeleteAccount(graphene.Mutation):
-    """A class to delete a user account
+    """A class to delete a user account.
 
     ...
 
@@ -276,12 +283,13 @@ class DeleteAccount(graphene.Mutation):
     -------
     mutate(info, password):
         deletes the user
+
     """
 
     password = graphene.String()
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         ...
 
@@ -289,12 +297,13 @@ class DeleteAccount(graphene.Mutation):
         ---------
         password: str
             The user's current password
+
         """
 
         password = graphene.String(required=True)
 
     def mutate(self, info, password):
-        """Deletes the current user account
+        """Delete the current user account.
 
         Parameters
         ----------
@@ -317,8 +326,8 @@ class DeleteAccount(graphene.Mutation):
         ------
         GraphQLError:
             If the current password is incorrect
-        """
 
+        """
         user = info.context.user
 
         if not user.check_password(password):
@@ -330,7 +339,7 @@ class DeleteAccount(graphene.Mutation):
 
 
 class PasswordChange(graphene.Mutation):
-    """A class to change a user's password
+    """A class to change a user's password.
 
     ...
 
@@ -338,12 +347,13 @@ class PasswordChange(graphene.Mutation):
     -------
     mutate(info, **kwargs):
         updates the user's password
+
     """
 
     user = graphene.Field(UserType)
 
     class Arguments:
-        """Class arguments
+        """Class arguments.
 
         Arguments
         ---------
@@ -355,6 +365,7 @@ class PasswordChange(graphene.Mutation):
 
         cfrm_password: str
             The user's confirmation password
+
         """
 
         old_password = graphene.String(required=True)
@@ -362,7 +373,7 @@ class PasswordChange(graphene.Mutation):
         cfrm_password = graphene.String(required=True)
 
     def mutate(self, info, old_password, new_password, cfrm_password):
-        """Deletes the current user account
+        """Change the current user's password.
 
         Parameters
         ----------
@@ -393,8 +404,8 @@ class PasswordChange(graphene.Mutation):
             If user is not logged in and not a super user
             If the old (current) password is incorrect
             If there is a password mismatch
-        """
 
+        """
         user = info.context.user
 
         if user.is_anonymous and user.is_superuser == False:
@@ -430,14 +441,14 @@ class ObtainJSONWebToken(
 
     Field(root, info, **kwargs):
         Resolves the generated token
+
     """
 
     LOGIN_ALLOWED_FIELDS = ["email", "username"]
 
     @classmethod
     def Field(cls, *args, **kwargs):
-        """Returns the JSON web token for given user."""
-
+        """Return the JSON web token for given user."""
         cls._meta.arguments.update({"password": graphene.String(required=True)})
         for field in cls.LOGIN_ALLOWED_FIELDS:
             cls._meta.arguments.update({field: graphene.String()})
@@ -446,8 +457,7 @@ class ObtainJSONWebToken(
 
     @classmethod
     def resolve(cls, root, info, **kwargs):
-        """Returns the resolved information."""
-
+        """Return the resolved information."""
         return cls()
 
 
