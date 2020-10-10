@@ -444,6 +444,7 @@ class ObtainJSONWebToken(
 
     """
 
+    user = graphene.Field(UserType)
     LOGIN_ALLOWED_FIELDS = ["email", "username"]
 
     @classmethod
@@ -457,8 +458,8 @@ class ObtainJSONWebToken(
 
     @classmethod
     def resolve(cls, root, info, **kwargs):
-        """Return the resolved information."""
-        return cls()
+        """Return the resolved information with the associated user."""
+        return cls(user=info.context.user)
 
 
 class Mutation(graphene.ObjectType):
