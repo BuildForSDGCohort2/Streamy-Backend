@@ -30,8 +30,8 @@ class MutationMixin:
     """
 
     @classmethod
-    def mutate(cls, root, info, **input):
-        return cls.resolve_mutation(root, info, **input)
+    def mutate(cls, root, info, **inputs):
+        return cls.resolve_mutation(root, info, **inputs)
 
     @classmethod
     def parent_resolve(cls, root, info, **kwargs):
